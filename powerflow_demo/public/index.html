@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>GeoJSON </title>
+      <link rel="stylesheet" href="https://openlayers.org/en/v4.2.0/css/ol.css" type="text/css">
+      <!--The line below is only needed for old environments like Internet Explorer and Android 4.x-->
+      <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+      <script src="https://openlayers.org/en/v4.2.0/build/ol-debug.js"></script>
+	  <script src="js/jquery.min.js"></script>
+      <script src="js/map.js"></script>
+	  <script src="js/d3-zoom.min.js"></script>
+	  <script src="https://d3js.org/d3.v4.min.js"></script>
+   </head>
+   <style>
+		.container { position:relative; padding:0 0 0 0px; }
+		svg :  {
+			display: block;
+			margin: 0 auto;
+		}
+		#svgDiv {
+			padding: 10px;
+		}
+		
+		.node circle {
+		  fill: #fff;
+		  stroke: steelblue;
+		  stroke-width: 3px;
+		}
+
+		.node text {
+		  font-family: "GE Inspira";
+		  font-size: 8px;
+		  stroke: white;
+		  fill: white;
+		}
+
+		.link {
+		  fill: none;
+		  stroke: #ccc;
+		  stroke-width: 2px;
+		}
+		
+		#sidebar {
+			position:absolute;
+			top:0; 
+			bottom:0; 
+			right:0;
+			width:400px;
+			background:#000;
+		}
+		#svgcontainer {
+			width: 350px;
+			height: 300px;
+		}
+		#selection {
+			font-family: "GE Inspira";
+			color: white;
+			padding: 10px;
+		}
+		#power {
+			font-family: "GE Inspira";
+			color: white;
+			padding: 10px;
+		}
+		#state {
+			font-family: "GE Inspira";
+			color: white;
+			padding: 10px;
+		}
+		#choosetx {
+			font-family: "GE Inspira";
+			color: white;
+			padding: 10px;
+		}
+   </style>
+   <body onload="init()">
+	<div class="container">
+      <div id="map" class="map"></div>
+	  <div id="sidebar">
+		<div id="power">
+			Power Demand (kW): <input type="text" name="fname" value="7.6"><br>
+		</div>
+		<div id="state">
+			<select id="stateselection">
+				<option value="normal">Normal</option>
+				<option value="operational">Operational</option>
+			</select>
+		</div>
+		<div id="choosetx">
+			Enter Transformer ID: <input id="txname" type="text" name="txname" value=""><br>
+			<button id="txbutton" type="txbutton">Find Transformer</button>
+		</div>
+		<div id="selection">No selection</div>
+		<div id="svgDiv">
+		</div>
+	  </div>
+	</div>
+   </body>
+</html>

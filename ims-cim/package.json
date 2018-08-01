@@ -1,0 +1,20 @@
+{
+  "name": "ims-cim",
+  "version": "0.0.1",
+  "author": "Phil",
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "^1.18.2",
+    "csvtojson": "^1.1.7",
+    "express": "^4.15.4",
+    "fixy": "^1.1.0",
+    "helmet": "^3.8.1",
+    "ps-node": "^0.1.6",
+    "request": "^2.81.0"
+  },
+  "engines": {
+    "node": ">0.10.45",
+    "npm": "3.10.2"
+  },
+  "scripts": {}
+}

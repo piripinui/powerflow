@@ -1,0 +1,21 @@
+{
+  "name": "powerflowdemo",
+  "version": "0.0.1",
+  "author": "Phil",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.15.4",
+    "helmet": "^3.8.2",
+    "lokijs": "^1.5.0",
+    "query-string": "^5.0.0",
+    "rbush": "^2.0.1",
+    "request": "^2.81.0",
+    "turf": "^3.0.14",
+    "url-pattern": "^1.0.3"
+  },
+  "engines": {
+    "node": ">0.10.45",
+    "npm": "3.10.2"
+  },
+  "scripts": {}
+}

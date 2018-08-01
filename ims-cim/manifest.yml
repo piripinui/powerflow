@@ -1,0 +1,12 @@
+---
+#
+#  CIM data in IMS.
+
+applications:
+  - name: ims-cim
+    buildpack: nodejs_buildpack
+    command: node server.js
+    memory: 512M
+env:
+  node_env: cloud
+  uaa_service_label: osm-ims

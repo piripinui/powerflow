@@ -1,0 +1,157 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<style>
+		#container {
+			width: 100%;
+			height: 100px;
+			margin: auto;
+			padding: 10px;
+		}
+		#text {
+			width: 50%;
+			float: left;
+		}
+		#results {
+			margin-left: 50%;
+		}
+	</style>
+	<script src="js/jquery.min.js"></script>
+	<script>
+		function allowDrop(ev) {
+			ev.preventDefault();
+		}
+
+		function drag(ev) {
+			console.log("Dragging...");
+			ev.dataTransfer.setData("text", ev.target.id);
+		}
+
+		function drop(ev) {
+			console.log("Dropping...");
+			//ev.preventDefault();
+			//var data = ev.dataTransfer.getData("text");
+			//ev.target.appendChild(document.getElementById(data));
+			//$("#textcontent").val(data);
+		}
+		
+		function addEventHandler(obj, evt, handler) {
+			if(obj.addEventListener) {
+				// W3C method
+				obj.addEventListener(evt, handler, false);
+			} else if(obj.attachEvent) {
+				// IE method.
+				obj.attachEvent('on'+evt, handler);
+			} else {
+				// Old school method.
+				obj['on'+evt] = handler;
+			}
+		}
+		
+
+		if(window.FileReader) { 
+			console.log("Adding event handler...");
+			addEventHandler(window, 'load', function() {		
+				var status = document.getElementById('status');
+				var drop   = document.getElementById('textcontent');
+				var list   = document.getElementById('list');
+				
+				function cancel(e) {
+				  if (e.preventDefault) { e.preventDefault(); }
+				  return false;
+				}
+			  
+				// Tells the browser that we *can* drop on this target
+				console.log("Setting drop for " + drop);
+				addEventHandler(drop, 'dragover', cancel);
+				addEventHandler(drop, 'dragenter', cancel);
+				addEventHandler(drop, 'drop', function (e) {
+					e = e || window.event; // get window.event if e argument missing (in IE)   
+					if (e.preventDefault) { e.preventDefault(); } // stops the browser from redirecting off to the image.
+
+					var dt    = e.dataTransfer;
+					var files = dt.files;
+					
+					for (var i = 0; i < files.length; i++) {
+						var file = files[i];
+						var reader = new FileReader();
+						reader.onload = function(){
+							var data = reader.result;
+							var ta = $("#textcontent");
+							ta.val(data);
+							//console.log(data);
+						};
+						
+						//attach event handlers here...
+				   
+						reader.readAsText(file);
+					}
+					return false;
+				});
+				
+			});
+			
+		} else { 
+			document.getElementById('status').innerHTML = 'Your browser does not support the HTML5 FileReader.';
+		}
+		
+		function submit() {
+			
+			var it = $("#textcontent").val();
+			
+			console.log("Submitting POST request...");
+			
+			var success = function(data, status) {
+				console.log("POST request was successful.");
+				var result = $("#resultscontent");
+				
+				result.val(JSON.stringify(data.data));
+			}
+			var failure = function(err, status) {
+				console.log("POST request failed: " + err.statusText + ", " + status);
+			}
+			
+			var postSettings = {
+				url: '/load',
+				data: it,
+				contentType: 'text/plain',
+				success: success,
+				error: failure,
+				dataType: 'json'
+			};
+			
+			$.post(postSettings);
+		}		
+	</script>
+</head>
+	<body>
+		<div id="status"></div>
+		<div id="container">
+			<div id="text" draggable="true">
+				<textarea id="textcontent" rows="50" cols="100">
+clear
+set DefaultBaseFrequency=50
+New Circuit.MV004  
+Edit Vsource.Source BasekV=66 
+New Transformer.Bourne_Primary_TX001 Buses=[SourceBus, Primary_Dist_Bus] Conns=[Wye Wye] kVs=[66 11] kVA=1500
+New Linecode.3A_ACSR_100_11 Units=km 
+New Line.LINE1 Bus1=Primary_Dist_Bus Bus2=LoadBus Linecode=3A_ACSR_100_11 Length=1.209 Units=km
+New Linecode.3A_OHL_50_11 Units=km 
+New Line.LINE2 Bus1=LoadBus Bus2=SecondaryBus Linecode=3A_OHL_50_11 Length=0.540 Units=km 
+New Transformer.Park_Farm_PM_TX Buses=[SecondaryBus, Residential_Dist_Bus] Conns=[Delta Wye] kVs=[11 .240] kVA=50
+New Load.LOADA Bus1=Residential_Dist_Bus.1 Phases=1 kV=0.400 kW=53.2 PF=.95 ! 7 houses (7 * 7.6 = 53.3kW) on phase A
+New Load.LOADB Bus1=Residential_Dist_Bus.2 Phases=1 kV=0.400 kW=68.4 PF=.95 ! 9 houses (9 * 7.6 = 68.4kW) on phase B
+New Load.LOADC Bus1=Residential_Dist_Bus.3 Phases=1 kV=0.400 kW=45.6 PF=.95 ! 6 houses (6 * 7.6 = 45.6kW) on phase C
+				</textarea>
+			</div>
+			<div id="results">
+				<textarea id="resultscontent" rows="50" cols="100">
+					Results will appear here.
+				</textarea>
+			</div>
+			<div>
+				<button onclick="submit();">Submit</button>
+			</div>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,63 @@
+clear
+// Set to default frequency in UK.
+set DefaultBaseFrequency=50
+// Start the creation of circuit MV004 from the EO Cambourne database.
+New Circuit.MV004  
+// Define source V and Z. ISC1 and ISC3 define the single and 3 phase source impedances - what should these be? Pu is the per-unit value of the base voltage - what should that really be in this case?
+//Edit Vsource.Source BasekV=66 pu=1.05 ISC3=3000 ISC1=2500 
+// If you define the source without ISC1, ISC3 and pu (as below) then it doesn't make a huge difference from the voltage perspective.
+Edit Vsource.Source BasekV=66 
+// Define the first transformer in the substation. Most values are ok except for kVAs and XHL. What should the kVAs really be for this?
+// XHL defines the percent reactance, H-L (winding 1 to winding 2) for 2 or 3 winding transformers. What the hell is this?
+// Note that the Wye - Wye configuration is derived from this transformer's EO "Bank Configuration" value.
+// Note also that in EO Transformers have a field called "Apparent Power Demand" - does this represent the load? Whatever it is, it does not have a value in either of the two TXs of this circuit.
+// Probably only used when customers have no connectivity data from the TX to energy consumers.
+// Similar, TXs have a "Energy Consumers" relationship but it is unpopulated for this circuit in the EO demo database (for both Transformers).
+// The kVA value for this TX is not defined in EO, so using a typical value for this kind of TX i.e. 15MVA in this case.
+New Transformer.Bourne_Primary_TX001 Buses=[SourceBus, Primary_Dist_Bus] Conns=[Wye Wye] kVs=[66 11] kVA=1500
+// Defines the linecode for the line from the substation downstream for circuit MV004. The type of line it is is defined here but the values are likely all wrong.
+// Note that R1 defines positive sequence resistance in ohms per unit (in this case, metres). R0, zero-sequence resistance. In this case, R1=0.896 is
+// derived from the wire spec's "Resistance 25" value.
+// X0 and X1 are the reactance/length values. There are no values for this in EO. Ditto for C0 and C1, the capacitance/length values.
+//New Linecode.3A_ACSR_100_11 R1=0.4568 X1=.1206 R0=.1784 X0=.4047 C1=3.4 C0=1.6 Units=km 
+// Because I don't know what the R0, R1 etc values should be, don't specify them (which means that the line will be a perfect conductor).
+New Linecode.3A_ACSR_100_11 Units=km 
+// This is the actual line from the substation using the line code above. Length is from the "Accurate Route Length" of the EO line.
+New Line.LINE1 Bus1=Primary_Dist_Bus Bus2=LoadBus Linecode=3A_ACSR_100_11 Length=1.209 Units=km
+// Define a new line code for the second wire that branches off the first to the pole-mounted TX. As above, the R1=1.191 is derived from the "Resistance 25"
+// value for this wire type in EO.
+//New Linecode.3A_OHL_50_11 R1=1.191 X1=.1206 R0=.1784 X0=.4047 C1=3.4 C0=1.6 Units=km 
+// Because I don't know what the R0, R1 etc values should be, don't specify them (which means that the line will be a perfect conductor).
+New Linecode.3A_OHL_50_11 Units=km 
+// This is the second line that branches off from the first to the pole-mounted transformer serving the actual houses.
+// At this stage it is simply a copy of the first line, but in EO it has a different physical makeup. Length of 540 comes from the "Accurate Route Length" value of
+// the EO record.
+New Line.LINE2 Bus1=LoadBus Bus2=SecondaryBus Linecode=3A_OHL_50_11 Length=0.540 Units=km 
+// This is the pole-mounted transformer stepping down the voltage from 11kV to 240V. Note that the Delta-Wye configuration is as specified in EO.
+// This transformer's asset specification *does* have value for "Rated Apparent Power" (=50kVA).
+// New Transformer.Park_Farm_PM_TX Buses=[SecondaryBus, Residential_Dist_Bus] Conns=[Delta Wye] kVs=[11 .240] kVA=50 XHL=10
+New Transformer.Park_Farm_PM_TX Buses=[SecondaryBus, Residential_Dist_Bus] Conns=[Delta Wye] kVs=[11 .240] kVA=50
+
+// Load in a daily consumption rate. In this case, 15 min values for P & Q in kW.
+New "LoadShape.LoadShape5_Actual" npts=8760 interval=1.0 mult=(File=LoadShape5_P_KW.csv)  Qmult=(File=LoadShape5_Q_KW.csv) useactual=Yes
+
+// This is the aggregated load represented by the houses being served by the pole-mounted transformer. Note that the wire connections to the actual
+// houses (which are defined in EO) are not represented in this model. In other words, the load is a spot load immediately connected to the pole-mounted
+// TX.
+// Note that the kW figure is from the average *maximum* (i.e. instantaneous peak) power demand for "all households" without electric heating = 7.6kW per house. As there are 20 houses
+// on this circuit, that means 20 * 7.6kW = 1752kW total (see https://www.gov.uk/government/uploads/system/uploads/attachment_data/file/208097/10043_R66141HouseholdElectricitySurveyFinalReportissue4.pdf).
+// It is unclear whether this power value is true power, but assume it is because of its units (W). Assuming a Power Factor (PF) of 0.95.
+// The kV is the nominal rated (1.0 per unit) voltage for load. According to the help
+// for a 3-Phase load you should specify the phase-to-phase kV value, so kV=0.400 for each phase.
+New Load.LOADA Bus1=Residential_Dist_Bus.1 daily=LoadShape5_Actual
+New Load.LOADB Bus1=Residential_Dist_Bus.2 daily=LoadShape5_Actual
+New Load.LOADC Bus1=Residential_Dist_Bus.3 daily=LoadShape5_Actual
+
+set mode=daily
+
+// Finished the definitions, now solve.
+Solve
+Export Voltage c:\work\ims-cim\Data\voltages.csv
+//Export Currents c:\work\ims-cim\Data\currents.csv
+//Export Powers c:\work\ims-cim\Data\powers.csv
+//Export Summary c:\work\ims-cim\Data\summary.csv
